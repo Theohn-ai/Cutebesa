@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Big Love Animation</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at center, #2b0033, #0d0011);
+    overflow: hidden;
+    font-family: sans-serif;
+  }
+
+  .message {
+    position: absolute;
+    top: 5%;
+    width: 100%;
+    text-align: center;
+    font-size: 3rem;
+    font-weight: bold;
+    color: red;
+    text-shadow: 0 0 30px red, 0 0 60px red;
+    animation: fadeIn 2s ease-in forwards;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  .fairy {
+    position: absolute;
+    bottom: 40px;
+    font-size: 4rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-shadow: 0 0 20px red;
+  }
+  .fairy.left { left: 40px; }
+  .fairy.right { right: 40px; }
+
+  .heart {
+    font-size: 3rem;
+    text-shadow: 0 0 20px red, 0 0 40px red;
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.3); }
+  }
+
+  .bubble {
+    position: absolute;
+    font-size: 1.2rem;
+    color: red;
+    text-shadow: 0 0 15px red, 0 0 30px red;
+    animation: fly 5s ease-in-out forwards;
+  }
+  @keyframes fly {
+    0% { transform: translate(0,0) scale(0.4); opacity: 1; }
+    70% { transform: translate(var(--dx), var(--dy)) scale(1); opacity: 1; }
+    100% { transform: translate(calc(var(--dx) + var(--fx)), calc(var(--dy) + var(--fy))) scale(1); opacity: 1; }
+  }
+
+  .floating-heart {
+    position: absolute;
+    font-size: 1.2rem;
+    color: red;
+    text-shadow: 0 0 15px red, 0 0 30px red;
+    animation: floatAround 4s infinite ease-in-out;
+  }
+  @keyframes floatAround {
+    0%   { transform: translate(0px, 0px); }
+    25%  { transform: translate(3px, -3px); }
+    50%  { transform: translate(-3px, 3px); }
+    75%  { transform: translate(2px, 2px); }
+    100% { transform: translate(0px, 0px); }
+  }
+
+  .letter {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 5rem;
+    color: red;
+    text-shadow: 0 0 30px red, 0 0 60px red;
+    font-weight: bold;
+  }
+  .letter.l { left: 10%; }
+  .letter.u { right: 10%; }
+</style>
+</head>
+<body>
+
+<div class="message">TO THE PRETTIEST GIRL I KNOW</div>
+
+<div class="fairy left">🧚<div class="heart">♥️</div></div>
+<div class="fairy right">🧚<div class="heart">♥️</div></div>
+
+<div class="letter l">l</div>
+<div class="letter u">u</div>
+
+<script>
+  // Adjusted scale so it doesn't overlap L and U
+  const heartPoints = [];
+  const scale = 20; // smaller than before
+  for (let t = 0; t < Math.PI * 2; t += 0.12) {
+    const x = 16 * Math.sin(t) ** 3;
+    const y = -(13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t));
+    heartPoints.push({ x: x * scale, y: y * scale });
+  }
+
+  const centerX = window.innerWidth / 2;
+  const centerY = window.innerHeight / 2;
+
+  function createFlyingHeart(fromX, fromY, toX, toY) {
+    const heart = document.createElement("div");
+    heart.className = "bubble";
+    heart.textContent = "♥️";
+    heart.style.left = fromX + "px";
+    heart.style.top = fromY + "px";
+    heart.style.setProperty("--dx", (toX - fromX) + "px");
+    heart.style.setProperty("--dy", (toY - fromY) + "px");
+    heart.style.setProperty("--fx", (Math.random()*10 - 5) + "px");
+    heart.style.setProperty("--fy", (Math.random()*10 - 5) + "px");
+    document.body.appendChild(heart);
+
+    heart.addEventListener("animationend", () => {
+      heart.remove();
+      addFloatingHeart(toX, toY);
+    });
+  }
+
+  function addFloatingHeart(x, y) {
+    const floating = document.createElement("div");
+    floating.className = "floating-heart";
+    floating.textContent = "♥️";
+    floating.style.left = (x - 8) + "px";
+    floating.style.top = (y - 8) + "px";
+    document.body.appendChild(floating);
+  }
+
+  let i = 0;
+  function sendHearts() {
+    if (i < heartPoints.length) {
+      const leftRect = document.querySelector(".fairy.left .heart").getBoundingClientRect();
+      const rightRect = document.querySelector(".fairy.right .heart").getBoundingClientRect();
+
+      const point = heartPoints[i];
+      const targetX = centerX + point.x;
+      const targetY = centerY + point.y;
+
+      if (i % 2 === 0) {
+        createFlyingHeart(leftRect.left + leftRect.width/2, leftRect.top, targetX, targetY);
+      } else {
+        createFlyingHeart(rightRect.left + rightRect.width/2, rightRect.top, targetX, targetY);
+      }
+
+      i++;
+      setTimeout(sendHearts, 250); // slower for more gradual magic
+    }
+  }
+
+  sendHearts();
+</script>
+
+</body>
+</html>
